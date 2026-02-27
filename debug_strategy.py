@@ -4,7 +4,7 @@ import ta
 
 exchange = ccxt.binance()
 
-def get_indicators(symbol, timeframe="1h", limit=150):
+def get_indicators(symbol, timeframe="4h", limit=3000):
     df = pd.DataFrame(
         exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit),
         columns=["time","open","high","low","close","volume"]

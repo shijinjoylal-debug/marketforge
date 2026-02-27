@@ -44,10 +44,18 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text("Usage: /approve <chat_id>")
         return
+    try:
+        uid=int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("Invalid chat_id")
+        return
+    if uid in approved_users:
+        await update.message.reply_text("User alredy approved")
+        return
 
-    uid = int(context.args[0])
     approved_users.add(uid)
     await update.message.reply_text(f"✅ Approved {uid}")
+   
 
 
 # =============================
@@ -69,7 +77,7 @@ async def scan(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"{r['symbol']} | {r['action']}\n"
             f"📈 Bull: {r['bull_prob']}%\n"
             f"📉 Bear: {r['bear_prob']}%\n"
-            f"💰 Price: {r['price']}\n\n"
+            #f" Price: {r['price']}\n\n"
         )
 
     msg += f"{bias}"
@@ -116,7 +124,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"━━━━━━━━━━━━━━\n"
             f"Action: {action}\n"
             f"Confidence: {confidence:.1f}%\n"
-            f"💰 Price: {price}\n"
+            #f Price: {price}\n"
         )
 
         await update.message.reply_text(message)

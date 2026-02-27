@@ -22,7 +22,7 @@ def get_model_path(symbol, timeframe):
 
 # ================= TRAIN MODEL =================
 
-def train_model(symbol="BTC/USDT", timeframe="1d", limit=1000):
+def train_model(symbol="BTC/USDT", timeframe="1d", limit=3000):
     print(f"Training model for {symbol} ({timeframe})...")
     
     try:
@@ -53,6 +53,9 @@ def train_model(symbol="BTC/USDT", timeframe="1d", limit=1000):
         df["BB_HIGH"] = bb.bollinger_hband()
         df["BB_LOW"] = bb.bollinger_lband()
         df["ATR"] = ta.volatility.average_true_range(df["high"], df["low"], df["close"], window=14)
+        
+        # Trend Strength
+        df["ADX"] = ta.trend.adx(df["high"], df["low"], df["close"], window=14)
 
         df.dropna(inplace=True)
 
@@ -64,6 +67,7 @@ def train_model(symbol="BTC/USDT", timeframe="1d", limit=1000):
         df["macd_diff"] = (df["MACD"] - df["MACD_SIGNAL"]) / df["close"]
         df["bb_width"] = (df["BB_HIGH"] - df["BB_LOW"]) / df["close"]
         df["atr_ratio"] = df["ATR"] / df["close"]
+        df["adx_ratio"] = df["ADX"] / 100.0
         
         # --- Labeling ---
         # Predict if price will be higher in next candle
@@ -74,7 +78,7 @@ def train_model(symbol="BTC/USDT", timeframe="1d", limit=1000):
 
         feature_cols = [
             "ema_diff", "price_dist_ema20", "price_dist_sma200", 
-            "rsi", "macd_diff", "bb_width", "atr_ratio"
+            "rsi", "macd_diff", "bb_width", "atr_ratio", "adx_ratio"
         ]
         
         X = df[feature_cols]
@@ -112,9 +116,18 @@ def train_model(symbol="BTC/USDT", timeframe="1d", limit=1000):
 
 # ================= LOAD MODEL =================
 
-def load_or_train(symbol="BTC/USDT", timeframe="1d"):
+def load_or_train(symbol="BTC/USDT", timeframe="1h"):
     model_path = get_model_path(symbol, timeframe)
-    
+    if os.path.exists(model_path):
+        age = time.time() - os.path.getmtime(model_path)
+        if age < 24 * 3600:
+            try:
+                return joblib.load(model_path)
+            except:
+                pass
+        return train_model(symbol,timeframe)
+
+
     # Reload model if it's older than 1 day
     if os.path.exists(model_path):
         age = time.time() - os.path.getmtime(model_path)
@@ -129,7 +142,7 @@ def load_or_train(symbol="BTC/USDT", timeframe="1d"):
 
 # ================= PREDICT =================
 
-def predict_confidence(symbol="BTC/USDT", timeframe="1d"):
+def predict_confidence(symbol="BTC/USDT", timeframe="1h"):
     # Ensure we have a model
     model = load_or_train(symbol, timeframe)
     if model is None:
@@ -137,7 +150,7 @@ def predict_confidence(symbol="BTC/USDT", timeframe="1d"):
 
     try:
         # Fetch fresh data for prediction
-        ohlcv = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=250)
+        ohlcv = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=3000)
         df = pd.DataFrame(
             ohlcv,
             columns=["time","open","high","low","close","volume"]
@@ -157,6 +170,7 @@ def predict_confidence(symbol="BTC/USDT", timeframe="1d"):
         df["BB_HIGH"] = bb.bollinger_hband()
         df["BB_LOW"] = bb.bollinger_lband()
         df["ATR"] = ta.volatility.average_true_range(df["high"], df["low"], df["close"], window=14)
+        df["ADX"] = ta.trend.adx(df["high"], df["low"], df["close"], window=14)
 
         df.dropna(inplace=True)
         last = df.iloc[-1]
@@ -169,7 +183,8 @@ def predict_confidence(symbol="BTC/USDT", timeframe="1d"):
             "rsi": last["RSI"] / 100.0,
             "macd_diff": (last["MACD"] - last["MACD_SIGNAL"]) / last["close"],
             "bb_width": (last["BB_HIGH"] - last["BB_LOW"]) / last["close"],
-            "atr_ratio": last["ATR"] / last["close"]
+            "atr_ratio": last["ATR"] / last["close"],
+            "adx_ratio": last["ADX"] / 100.0
         }])
 
         # Predict probability of class 1 (Bullish/Up)

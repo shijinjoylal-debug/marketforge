@@ -4,7 +4,7 @@ import ta
 
 exchange = ccxt.binance()
 
-def backtest(symbol, timeframe="1d", limit=250):
+def backtest(symbol, timeframe="4h", limit=3000):
     df = pd.DataFrame(
         exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit),
         columns=["time","open","high","low","close","volume"]
