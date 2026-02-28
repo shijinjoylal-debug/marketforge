@@ -118,25 +118,19 @@ def train_model(symbol="BTC/USDT", timeframe="1d", limit=3000):
 
 def load_or_train(symbol="BTC/USDT", timeframe="1h"):
     model_path = get_model_path(symbol, timeframe)
+    
+    # Check if model exists and is fresh (less than 24 hours old)
     if os.path.exists(model_path):
         age = time.time() - os.path.getmtime(model_path)
         if age < 24 * 3600:
             try:
                 return joblib.load(model_path)
-            except:
-                pass
-        return train_model(symbol,timeframe)
-
-
-    # Reload model if it's older than 1 day
-    if os.path.exists(model_path):
-        age = time.time() - os.path.getmtime(model_path)
-        if age < 24 * 3600:
-            try:
-                return joblib.load(model_path)
-            except:
+            except Exception as e:
+                print(f"Error loading model for {symbol}: {e}")
                 pass
     
+    # If model doesn't exist or is old, train a new one
+    print(f"Model for {symbol} is missing or outdated. Retraining...")
     return train_model(symbol, timeframe)
 
 
@@ -146,7 +140,8 @@ def predict_confidence(symbol="BTC/USDT", timeframe="1h"):
     # Ensure we have a model
     model = load_or_train(symbol, timeframe)
     if model is None:
-        return 0.5, 50.0 # Neutral
+        print(f"Warning: No model found/trained for {symbol}. Returning neutral confidence.")
+        return 50.0 # Neutral
 
     try:
         # Fetch fresh data for prediction

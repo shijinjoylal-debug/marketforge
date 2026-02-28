@@ -127,7 +127,9 @@ def analyze_symbol(symbol):
         return action, round(final_conf, 2), current_price
 
     except Exception as e:
+        import traceback
         print(f"Error analyzing {symbol}: {e}")
+        traceback.print_exc()
         return "WAIT", 0, 0
         
 def scan_market(symbols):
