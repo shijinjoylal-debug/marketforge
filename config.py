@@ -1,10 +1,15 @@
-BOT_TOKEN = "8458929430:AAHCgO9Xl_gGGfhRR3SmRWDHcgHe_0Blu5E"
-ADMIN_ID = 8351105803
-SYMBOLS = ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
-TIMEFRAME = "1h"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+SYMBOLS = os.getenv("SYMBOLS", "BTC/USDT,ETH/USDT,SOL/USDT").split(",")
+TIMEFRAME = os.getenv("TIMEFRAME", "1h")
 
 # Hybrid Strategy Settings
-ML_WEIGHT = 0.5
-STRATEGY_WEIGHT = 0.5
-THRESHOLD_BUY = 65
-THRESHOLD_SELL = 35
+ML_WEIGHT = float(os.getenv("ML_WEIGHT", "0.5"))
+STRATEGY_WEIGHT = float(os.getenv("STRATEGY_WEIGHT", "0.5"))
+THRESHOLD_BUY = int(os.getenv("THRESHOLD_BUY", "65"))
+THRESHOLD_SELL = int(os.getenv("THRESHOLD_SELL", "35"))
