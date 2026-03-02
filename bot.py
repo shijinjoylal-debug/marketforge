@@ -79,9 +79,19 @@ async def scan(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_history("command", {"command": "/scan", "user_id": chat_id, "bias": bias})
 
     msg = "📊 MARKET SCAN (1D)\n\n"
-    for sym, result in results.items():
-        msg += f"{sym} | Result: {result[action]} / {result[confidence]}%\n"
+
+    for r in results:
+        msg += (
+            f"{r['symbol']} | {r['action']}\n"
+            f"📈 Bull: {r['bull_prob']}%\n"
+            f"📉 Bear: {r['bear_prob']}%\n"
+            #f" Price: {r['price']}\n\n"
+        )
+
+    msg += f"\n{bias}"
+
     await update.message.reply_text(msg)
+
 
 
 
@@ -99,10 +109,15 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_history("command", {"command": "/stats", "user_id": chat_id})
 
     for sym in SYMBOLS:
-        result = backtest(sym)
-        msg += f"{sym} | Result: {result[action]} / {result[confidence]}%\n"
+        res = backtest(sym)
+        msg += (
+            f"🔹 {sym}\n"
+            f"Winrate: {res['winrate']}%\n"
+            f"Trades: {res['trades']} ({res['wins']}W / {res['losses']}L)\n\n"
+        )
 
     await update.message.reply_text(msg)
+
 
 
 
