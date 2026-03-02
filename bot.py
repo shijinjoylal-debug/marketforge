@@ -79,7 +79,8 @@ async def scan(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log_history("command", {"command": "/scan", "user_id": chat_id, "bias": bias})
 
     msg = "📊 MARKET SCAN (1D)\n\n"
-    # ... rest of the code ...
+    for sym, result in results.items():
+        msg += f"{sym} | Result: {result[action]} / {result[confidence]}%\n"
     await update.message.reply_text(msg)
 
 
@@ -99,7 +100,7 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for sym in SYMBOLS:
         result = backtest(sym)
-        msg += f"{sym} | Result: {result}\n"
+        msg += f"{sym} | Result: {result[action]} / {result[confidence]}%\n"
 
     await update.message.reply_text(msg)
 
