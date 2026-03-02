@@ -105,7 +105,21 @@ def train_model(symbol="BTC/USDT", timeframe="1d", limit=3000):
         model_path = get_model_path(symbol, timeframe)
         joblib.dump(pipeline, model_path)
         
+        # Save metadata to MongoDB
+        from database import save_model_metadata
+        save_model_metadata(
+            symbol=symbol, 
+            accuracy=acc, 
+            timeframe=timeframe,
+            metadata={
+                "feature_cols": feature_cols,
+                "n_samples": len(df),
+                "timestamp": time.time()
+            }
+        )
+        
         return pipeline
+
 
     except Exception as e:
         import traceback
