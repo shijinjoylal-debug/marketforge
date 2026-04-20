@@ -134,7 +134,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if text in ["BTC", "ETH", "SOL"]:
         symbol = text + "/USDT"
-        action, confidence, price = analyze_symbol(symbol)
+        action, confidence, price, reason = analyze_symbol(symbol)
         log_history("query", {"symbol": symbol, "user_id": chat_id, "action": action, "confidence": confidence})
 
         message = (
@@ -142,7 +142,8 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"━━━━━━━━━━━━━━\n"
             f"Action: {action}\n"
             f"Confidence: {confidence:.1f}%\n"
-            #f Price: {price}\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"Reasoning:\n{reason}"
         )
 
         await update.message.reply_text(message)
