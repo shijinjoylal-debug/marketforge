@@ -1,6 +1,6 @@
 import pymongo
 from datetime import datetime
-from config import MONGO_URI, DB_NAME, ADMIN_ID
+from config import MONGO_URI, DB_NAME, ADMIN_IDS
 
 client = pymongo.MongoClient(MONGO_URI)
 db = client[DB_NAME]
@@ -13,13 +13,15 @@ models_col = db["models"]
 # ================= USER MANAGEMENT =================
 
 def init_db():
-    """Initialize database with admin if not exists"""
-    if not users_col.find_one({"user_id": ADMIN_ID}):
-        users_col.update_one(
-            {"user_id": ADMIN_ID},
-            {"$set": {"approved": True, "added_at": datetime.now()}},
-            upsert=True
-        )
+    """Initialize database with admins if not exists"""
+    for admin_id in ADMIN_IDS:
+        if not users_col.find_one({"user_id": admin_id}):
+            users_col.update_one(
+                {"user_id": admin_id},
+                {"$set": {"approved": True, "added_at": datetime.now()}},
+                upsert=True
+            )
+
 
 def add_user(user_id):
     users_col.update_one(

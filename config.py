@@ -4,7 +4,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+# Admin IDs
+ADMIN_IDS = []
+for key in ["ADMIN_ID", "ADMIN_ID2"]:
+    val = os.getenv(key)
+    if val:
+        try:
+            ADMIN_IDS.append(int(val.strip()))
+        except ValueError:
+            continue
+# For backward compatibility if needed, though we will update other files
+ADMIN_ID = ADMIN_IDS[0] if ADMIN_IDS else 0
+
 SYMBOLS = os.getenv("SYMBOLS", "BTC/USDT,ETH/USDT,SOL/USDT").split(",")
 TIMEFRAME = os.getenv("TIMEFRAME", "1h")
 MONGO_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")

@@ -9,7 +9,7 @@ from telegram.ext import (
     filters,
 )
 
-from config import BOT_TOKEN, ADMIN_ID, SYMBOLS
+from config import BOT_TOKEN, ADMIN_IDS, SYMBOLS
 from strategy import analyze_symbol, scan_market
 from database import add_user, is_user_approved, get_approved_users, log_history
 
@@ -41,7 +41,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # COMMAND: /approve
 # =============================
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.id != ADMIN_ID:
+    admin_id = update.effective_chat.id
+    if admin_id not in ADMIN_IDS:
         await update.message.reply_text("❌ Not authorized")
         return
 
@@ -59,7 +60,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     add_user(uid)
     approved_users.add(uid)
-    log_history("approval", {"admin_id": ADMIN_ID, "approved_user": uid})
+    log_history("approval", {"admin_id": admin_id, "approved_user": uid})
     await update.message.reply_text(f"✅ Approved {uid}")
 
    
